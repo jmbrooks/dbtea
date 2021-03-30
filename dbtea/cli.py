@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 import sys
-
 from typing import Callable
 
 from dbt.config import PROFILES_DIR
@@ -10,6 +9,7 @@ from dbt.config import PROFILES_DIR
 import dbtea.utils as utils
 from dbtea.exceptions import DbteaException
 from dbtea.logger import DBTEA_LOGGER as logger
+
 # from dbtea import __version__
 
 
@@ -51,7 +51,9 @@ def _build_base_subparser() -> argparse.ArgumentParser:
         "--profiles-dir",
         type=str,
         default=PROFILES_DIR,
-        help="The directory to look for the profiles.yml file. Default: {}".format(PROFILES_DIR),
+        help="The directory to look for the profiles.yml file. Default: {}".format(
+            PROFILES_DIR
+        ),
     )
     base_subparser.add_argument(
         "-v",
@@ -88,8 +90,7 @@ def handle_exceptions(function: Callable) -> Callable:
         except DbteaException as error:
             logger.error(
                 f"\n{error}\n\n"
-                + "For support, please create an issue at "
-                    "https://github.com/spectacles-ci/spectacles/issues"
+                + "For support, please create an issue at https://github.com/spectacles-ci/spectacles/issues"
                 + "\n"
             )
             sys.exit(error.exit_code)
@@ -116,28 +117,34 @@ def create_parser() -> argparse.ArgumentParser:
     Returns:
         argparse.ArgumentParser: Top-level argument parser.
     """
-    parser = argparse.ArgumentParser(prog="dbtea", description="Manage and administer dbt")
-    parser.add_argument("--version", action="version", version='0.1.0', help="Current dbtea version")
-    subparser_action = parser.add_subparsers(
-        title="Available sub-commands", dest="command"
+    parser = argparse.ArgumentParser(
+        prog="dbtea", description="Manage and administer dbt"
     )
-
-    base_subparser = _build_base_subparser()
+    parser.add_argument(
+        "--version", action="version", version="0.1.0", help="Current dbtea version"
+    )
+    # subparser_action = parser.add_subparsers(
+    #     title="Available sub-commands", dest="command"
+    # )
+    #
+    # base_subparser = _build_base_subparser()
 
     return parser
 
 
 def main():
     """Execute dbtea, the primary entrypoint."""
-    # parser = create_parser()
-    # args = parser.parse_args()
-    # print(args)
+    parser = create_parser()
+    args = parser.parse_args()
+    print(args)
 
-    sample_path = '/tests/resources/dbt_projects/dim_date'
-    dbt_project_directory = utils.fetch_dbt_project_directory(sample_path)
-    dim_date_yaml = utils.parse_yaml_file(os.path.join(dbt_project_directory, "models/marts/_core.yml"))
-    print(dim_date_yaml)
+    # sample_path = "/tests/resources/dbt_projects/dim_date"
+    # dbt_project_directory = utils.fetch_dbt_project_directory(sample_path)
+    # dim_date_yaml = utils.parse_yaml_file(
+    #     os.path.join(dbt_project_directory, "models/marts/_core.yml")
+    # )
+    # print(dim_date_yaml)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

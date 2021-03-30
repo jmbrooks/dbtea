@@ -1,5 +1,6 @@
 class DbteaException(Exception):
     """Exception related to dbtea configuration, processing or compatibility."""
+
     exit_code = 100
 
     def __init__(self, name: str, title: str, detail: str):

@@ -1,7 +1,7 @@
 import logging
 
-LOG_FILENAME = 'dbtea.log'
-logger = logging.getLogger('dbtea')
+LOG_FILENAME = "dbtea.log"
+logger = logging.getLogger("dbtea")
 logger.setLevel(logging.DEBUG)
 
 console_handler = logging.StreamHandler()
