@@ -48,3 +48,9 @@ jobs:
 
       - codecov/upload:
           file: coverage.xml
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
