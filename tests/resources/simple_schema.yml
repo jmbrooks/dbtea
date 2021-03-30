@@ -1,0 +1,24 @@
+version: 2
+
+models:
+  - name: stg_system__evaluations
+    description: ""
+    columns:
+      - name: evaluation_id
+        description: "Evaluation unique key"
+        tests:
+          - not_null
+          - unique
+
+      - name: evaluation_status
+        description: "Status of evaluation result (e.g. pass, fail)"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['pass', 'fail', 'skip']
+
+  - name: stg_system__scorecards
+    description: "Simple scorecards breakdown from grader"
+    columns:
+      - name: scorecard_id
+        description: Unique ID for a scorecard

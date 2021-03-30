@@ -1,0 +1,159 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: "{{ doc('dim_date') }}"
+    columns:
+      - name: date_key
+        description: "Unique integer identifier for a date of the format YYYYMMDD, and primary for the table"
+        tests:
+          - not_null
+          - unique
+
+      - name: calendar_date
+        description: "The calendar date of the form YYYY-MM-DD (e.g. 2020-02-28), also serves as the unique key for this table. Note that 2099-12-31 represents 'multiple dates' and 1970-01-01 represents an unknown or unknown past date"
+        tests:
+          - not_null
+          - unique
+
+      - name: day_of_week
+        description: ""
+
+      - name: day_of_week_name
+        description: ""
+
+      - name: day_of_month
+        description: ""
+
+      - name: week_of_month
+        description: ""
+
+      - name: calendar_month
+        description: ""
+
+      - name: day_of_quarter
+        description: ""
+
+      - name: week_of_quarter
+        description: ""
+
+      - name: month_of_quarter
+        description: ""
+
+      - name: calendar_quarter
+        description: ""
+
+      - name: day_of_year
+        description: ""
+
+      - name: week_of_year
+        description: ""
+
+      - name: month_of_year
+        description: ""
+
+      - name: quarter_of_year
+        description: ""
+
+      - name: calendar_year
+        description: ""
+
+      - name: is_leap_year
+        description: "True if the year is part of a leap year, otherwise False"
+        tests:
+          - not_null
+
+      - name: is_weekday
+        description: "True if the date is a week day (Mon - Fri), otherwise False"
+        tests:
+          - not_null
+
+      - name: is_holiday
+        description: "True if the date is a holiday in the United States (based on standard federal holidays), otherwise False"
+        tests:
+          - not_null
+
+      - name: is_workday
+        description: "True if the date is a working day- a day of the week and not a holiday, otherwise False"
+        tests:
+          - not_null
+
+      - name: days_in_month
+        description: ""
+
+      - name: days_in_quarter
+        description: ""
+
+      - name: days_in_year
+        description: ""
+
+      - name: day_of_week_in_month
+        description: ""
+
+      - name: day_of_week_in_quarter
+        description: ""
+
+      - name: day_of_week_in_year
+        description: ""
+
+      - name: first_date_of_week
+        description: ""
+
+      - name: last_date_of_week
+        description: ""
+
+      - name: first_date_of_month
+        description: ""
+
+      - name: last_date_of_month
+        description: ""
+
+      - name: first_date_of_quarter
+        description: ""
+
+      - name: last_date_of_quarter
+        description: ""
+
+      - name: first_date_of_year
+        description: ""
+
+      - name: last_date_of_year
+        description: ""
+
+      - name: year_month_day
+        description: ""
+
+      - name: year_month
+        description: ""
+
+      - name: year_quarter
+        description: ""
+
+      - name: custom_date_detail
+        description: ""
+
+      - name: row_valid_from_time
+        description: "The timestamp when this version of the row became 'valid', as in it when it began correctly representing reality"
+        tests:
+          - not_null
+
+      - name: row_valid_to_time
+        description: "The timestamp when this version of the row was no longer 'valid', as in it when it stopped correctly representing reality"
+        tests:
+          - not_null
+
+      - name: is_row_currently_valid
+        description: "True if this version of the record represents the current state of reality"
+        tests:
+          - not_null
+
+      - name: scd_unique_key
+        description: "Unique identifier for a version of a row in the base table underlying this dimension table"
+        tests:
+          - not_null
+          - unique
+
+      - name: inserted_at
+        description: "The time when this row was inserted into the table"
+        tests:
+          - not_null
