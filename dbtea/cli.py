@@ -9,6 +9,7 @@ from dbt.config import PROFILES_DIR
 import dbtea.utils as utils
 from dbtea.exceptions import DbteaException
 from dbtea.logger import DBTEA_LOGGER as logger
+from dbtea.version import check_installed_python_version
 
 # from dbtea import __version__
 
@@ -134,6 +135,8 @@ def create_parser() -> argparse.ArgumentParser:
 
 def main():
     """Execute dbtea, the primary entrypoint."""
+    check_installed_python_version()
+
     parser = create_parser()
     args = parser.parse_args()
     print(args)
