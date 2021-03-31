@@ -1,5 +1,4 @@
 import os
-
 import yaml
 
 from dbtea.exceptions import DbteaException
