@@ -1,2 +1,4 @@
 dbt==0.19.0
+lkml==1.1.0
 PyYAML==5.4.1
+requests==2.25.1
