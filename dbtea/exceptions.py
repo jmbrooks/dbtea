@@ -1,4 +1,5 @@
 from typing import Any, Dict, Optional
+
 import requests
 
 
@@ -39,6 +40,7 @@ class GitException(Exception):
 
 
 def _details_from_http_error(response: requests.Response) -> Optional[Dict[str, Any]]:
+    """"""
     try:
         details = response.json()
     # Requests raises a ValueError if the response is invalid JSON
