@@ -3,6 +3,7 @@ from typing import List, Union
 
 import lkml
 
+import dbtea.utils as utils
 from dbtea.exceptions import DbteaException
 from dbtea.logger import DBTEA_LOGGER as logger
 
@@ -32,24 +33,119 @@ VALID_LOOKML_DIMENSION_PROPERTIES = {
 }
 
 
+class LookmlFile(object):
+    """"""
+
+    def __init__(self, name: str, lookml_type: str, directory_path: str = "./", lookml_data: dict = None):
+        """"""
+        self.name = name
+        self.lookml_type = lookml_type
+        self.directory_path = directory_path
+        self.lookml_data = lookml_data
+
+    @classmethod
+    def from_lookml_string(cls, name: str, lookml_type: str, directory_path: str = "./", lookml_string: str = None):
+        """"""
+        return cls(name, lookml_type, directory_path=directory_path, lookml_data=lkml.load(lookml_string))
+
+    @property
+    def lookml_file_name(self) -> str:
+        """"""
+        if self.lookml_type.lower() == "generic":
+            return f"{self.name}.lkml"
+        else:
+            return f"{self.name}.{self.lookml_type}.lkml"
+
+    @property
+    def lookml_file_name_and_path(self) -> str:
+        """"""
+        return utils.assemble_path(self.directory_path, self.lookml_file_name)
+
+    @property
+    def lookml_string(self) -> str:
+        """"""
+        return lkml.dump(self.lookml_data)
+
+    def set_lookml_data(self, lookml_data: dict):
+        """"""
+        self.lookml_data = lookml_data
+
+    def write_to_local_file(self, local_lookml_project_path: str):
+        """"""
+        with open(utils.assemble_path(local_lookml_project_path, self.lookml_file_name_and_path)) as lookml_file:
+            lookml_file.write(self.lookml_string)
+
+
+class LookmlModel(LookmlFile):
+    """"""
+
+    def __init__(self, name: str, directory_path: str = None, model_data: dict = None):
+        """"""
+        super().__init__(name, "model", directory_path=directory_path, lookml_data=model_data)
+
+    @classmethod
+    def assemble_model(cls, model_name: str, directory_path: str, connection: str = None, label: str = None,
+                       includes: list = None, explores: List[dict] = None, access_grants: List[dict] = None,
+                       tests: List[dict] = None, datagroups: List[dict] = None, map_layers: List[dict] = None,
+                       named_value_formats: List[dict] = None, fiscal_month_offset: int = None, persist_for: str = None,
+                       persist_with: str = None, week_start_day: str = None, case_sensitive: bool = True):
+        """"""
+        assembled_model_dict = dict()
+        logger.info("Creating LookML Model: {}".format(model_name))
+
+        # Add optional model options
+        if connection:
+            assembled_model_dict["connection"] = connection
+        if label:
+            assembled_model_dict["label"] = label
+        if includes:
+            assembled_model_dict["includes"] = includes
+        if persist_for:
+            assembled_model_dict["persist_for"] = persist_for
+        if persist_with:
+            assembled_model_dict["persist_with"] = persist_with
+        if fiscal_month_offset:
+            assembled_model_dict["fiscal_month_offset"] = fiscal_month_offset
+        if week_start_day:
+            assembled_model_dict["week_start_day"] = week_start_day
+        if not case_sensitive:
+            assembled_model_dict["case_sensitive"] = "no"
+
+        # Add body of Model
+        if datagroups:
+            assembled_model_dict["datagroups"] = datagroups
+        if access_grants:
+            assembled_model_dict["access_grants"] = access_grants
+        if explores:
+            assembled_model_dict["explores"] = explores
+        if named_value_formats:
+            assembled_model_dict["named_value_formats"] = named_value_formats
+        if map_layers:
+            assembled_model_dict["map_layers"] = map_layers
+        if tests:
+            assembled_model_dict["tests"] = tests
+
+        return super().__init__(model_name, "model", directory_path=directory_path, lookml_data=assembled_model_dict)
+
+
 def create_lookml_model(
-    model_name: str,
-    output_to: str = "stdout",
-    connection: str = None,
-    label: str = None,
-    includes: list = None,
-    explores: List[dict] = None,
-    access_grants: List[dict] = None,
-    tests: List[dict] = None,
-    datagroups: List[dict] = None,
-    map_layers: List[dict] = None,
-    named_value_formats: List[dict] = None,
-    fiscal_month_offset: int = None,
-    persist_for: str = None,
-    persist_with: str = None,
-    week_start_day: str = None,
-    case_sensitive: bool = True,
-    output_directory: str = None,
+        model_name: str,
+        output_to: str = "stdout",
+        connection: str = None,
+        label: str = None,
+        includes: list = None,
+        explores: List[dict] = None,
+        access_grants: List[dict] = None,
+        tests: List[dict] = None,
+        datagroups: List[dict] = None,
+        map_layers: List[dict] = None,
+        named_value_formats: List[dict] = None,
+        fiscal_month_offset: int = None,
+        persist_for: str = None,
+        persist_with: str = None,
+        week_start_day: str = None,
+        case_sensitive: bool = True,
+        output_directory: str = None,
 ) -> Union[None, str]:
     """"""
     assembled_model_dict = dict()
@@ -112,19 +208,19 @@ def create_lookml_model(
 
 
 def create_lookml_view(
-    view_name: str,
-    sql_table_name: str = None,
-    derived_table: str = None,
-    dimensions: List[dict] = None,
-    dimension_groups: List[dict] = None,
-    measures: List[dict] = None,
-    sets: List[dict] = None,
-    parameters: List[dict] = None,
-    label: str = None,
-    required_access_grants: list = None,
-    extends: str = None,
-    extension_is_required: bool = False,
-    include_suggestions: bool = True,
+        view_name: str,
+        sql_table_name: str = None,
+        derived_table: str = None,
+        dimensions: List[dict] = None,
+        dimension_groups: List[dict] = None,
+        measures: List[dict] = None,
+        sets: List[dict] = None,
+        parameters: List[dict] = None,
+        label: str = None,
+        required_access_grants: list = None,
+        extends: str = None,
+        extension_is_required: bool = False,
+        include_suggestions: bool = True,
 ) -> str:
     """"""
     assembled_view_dict = {"view": {"name": view_name}}
@@ -136,7 +232,7 @@ def create_lookml_view(
             name="missing-lookml-view-properties",
             title="Missing Necessary LookML View Properties",
             detail="Created LookML Views must specify either a `sql_table_name`, `derived_table` or `extends` in order "
-            "to properly specify the view source",
+                   "to properly specify the view source",
         )
 
     # Add optional view options as needed
