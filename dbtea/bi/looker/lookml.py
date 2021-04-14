@@ -1,5 +1,5 @@
 import os
-from typing import List, Union
+from typing import List, Tuple, Union
 
 import lkml
 
@@ -8,18 +8,58 @@ from dbtea.logger import DBTEA_LOGGER as logger
 
 OUTPUT_TO_OPTIONS = {"stdout", "file"}
 
+LOOKML_DIMENSION = "dimension"
+LOOKML_DIMENSION_GROUP = "dimension_group"
+LOOKML_MEASURE = "measure"
+LOOKML_SET = "set"
 
-def parse_lookml_file(lookml_file_name: str) -> dict:
-    """Parse a LookML file into a dictionary with keys for each of its primary properties and a list of values."""
-    with open(lookml_file_name, "r") as lookml_file_stream:
-        lookml_data = lkml.load(lookml_file_stream)
+LOOKML_TYPE_STRING = "string"
+LOOKML_TYPE_NUMBER = "number"
+LOOKML_TYPE_DATE = "date"
+LOOKML_TYPE_TIMESTAMP = "time"
+LOOKML_TYPE_BOOL = "yesno"
+LOOKML_TYPE_ZIP = "zipcode"
 
-    return lookml_data
+LOOKML_DIMENSION_GROUP_TYPES = {"duration", "time"}
+
+LOOKML_ZIPCODE_FIELD_NAMES = {"zipcode", "zip", "zip_code", "postalcode", "postal_code"}
+VALID_LOOKML_VIEW_PROPERTIES = {
+    "name", "label", "extends", "extension", "sql_table_name", "derived_table", "required_access_grants", "suggestions",
+    "parameters", "parameter", "dimensions", "dimension", "dimension_groups", "dimension_group" "measures", "measure",
+    "sets", "set"
+}
+VALID_LOOKML_DIMENSION_PROPERTIES = {
+    "name", "action", "allow_fill", "alpha_sort", "bypass_suggest_restrictions", "can_filter", "case", "case_sensitive",
+    "datatype", "drill_fields", "end_location_field", "fanout_on", "full_suggestions", "group_label",
+    "group_item_label", "html", "label_from_parameter", "link", "map_layer_name", "order_by_field", "primary_key",
+    "required_fields", "skip_drill_filter", "start_location_field", "suggestions", "suggest_persist_for", "style",
+    "sql", "sql_end", "sql_start", "tiers", "sql_longitude", "sql_latitude", "string_datatype", "units", "value_format",
+    "value_format_name", "alias", "convert_tz", "description", "hidden", "label", "required_access_grants",
+    "suggestable", "tags", "type", "suggest_dimension", "suggest_explore", "view_label"
+}
+
+LOOKML_YESNO_DATA_TYPE_MAPPINGS = {"bit", "bool", "boolean"}
+LOOKML_NUMBER_DATA_TYPE_MAPPINGS = {"int", "tinyint", "smallint", "bigint", "integer", "numeric", "number", "decimal",
+                                    "float", "real", "serial", "int64", "double", "double precision"}
+LOOKML_TIME_DATA_TYPE_MAPPINGS = {"timestamp", "timestamp_tz", "timestamp_ltz", "timestamp_ntz", "datetime"}
+LOOKML_DATE_DATA_TYPE_MAPPINGS = {"date"}
 
 
-def create_lookml_explore():
+def convert_to_lookml_data_type(field_name: str, field_type: str, include_postal_code: bool = False) -> Tuple[str, str]:
     """"""
-    pass
+    if include_postal_code and field_name in LOOKML_ZIPCODE_FIELD_NAMES:
+        return LOOKML_TYPE_ZIP, LOOKML_DIMENSION
+
+    if field_type in LOOKML_YESNO_DATA_TYPE_MAPPINGS:
+        return LOOKML_TYPE_BOOL, LOOKML_DIMENSION
+    elif field_type in LOOKML_TIME_DATA_TYPE_MAPPINGS:
+        return LOOKML_TYPE_TIMESTAMP, LOOKML_DIMENSION_GROUP
+    elif field_type in LOOKML_DATE_DATA_TYPE_MAPPINGS:
+        return LOOKML_TYPE_DATE, LOOKML_DIMENSION
+    elif field_type in LOOKML_NUMBER_DATA_TYPE_MAPPINGS:
+        return LOOKML_TYPE_NUMBER, LOOKML_DIMENSION
+    else:
+        return LOOKML_TYPE_STRING, LOOKML_DIMENSION
 
 
 def create_lookml_model(
@@ -158,3 +198,77 @@ def create_lookml_view(
         assembled_view_dict["view"]["sets"] = sets
 
     return lkml.dump(assembled_view_dict)
+
+
+def parse_lookml_file(lookml_file_name: str) -> dict:
+    """Parse a LookML file into a dictionary with keys for each of its primary properties and a list of values."""
+    logger.info("Parsing data from LookML file {}".format(lookml_file_name))
+    with open(lookml_file_name, "r") as lookml_file_stream:
+        lookml_data = lkml.load(lookml_file_stream)
+
+    return lookml_data
+
+
+def to_lookml(data: dict, output_to: str = "stdout", output_file: str = None,
+              lookml_file_type: str = None, output_directory: str = None) -> Union[None, str]:
+    """"""
+    if output_to == "stdout":
+        return lkml.dump(data)
+    else:
+        output_file = os.path.join(output_directory, output_file + "." + lookml_file_type + ".lkml") \
+            if lookml_file_type else os.path.join(output_directory, output_file + ".lkml")
+        with open(output_file, "w") as output_stream:
+            output_stream.write(lkml.dump(data))
+
+
+def dbt_model_schemas_to_lookml_views(dbt_models_data: List[dict]) -> dict:
+    """"""
+    lookml_views_dbt_data = dbt_models_data
+
+    for model_data in lookml_views_dbt_data:
+        if "columns" in model_data:
+            model_data["dimensions"] = list()
+            model_data["dimension_groups"] = list()
+            invalid_column_properties = list()
+
+            for index, column_data in enumerate(model_data["columns"]):
+                for column_property_key in column_data.keys():
+                    if column_property_key not in VALID_LOOKML_DIMENSION_PROPERTIES:
+                        invalid_column_properties.append(column_property_key)
+                for invalid_column_property in invalid_column_properties:
+                    logger.debug("Removing property invalid for LookML for dimension {}: {}".format(
+                        model_data.get("name"), invalid_column_property))
+                    if model_data["columns"][index].get(invalid_column_property):
+                        del model_data["columns"][index][invalid_column_property]
+
+                if column_data.get("type") in LOOKML_DIMENSION_GROUP_TYPES:
+                    column_data.update({"sql": "${TABLE}." + column_data.get("name")})
+                    model_data["dimension_groups"].append(column_data)
+                else:
+                    column_data.update({"sql": "${TABLE}." + column_data.get("name")})
+                    model_data["dimensions"].append(column_data)
+                # model_data["dimensions"][index]["sql"] = "${TABLE}." + column_data.get("name")
+
+            del model_data["columns"]
+
+        if "alias" in model_data:
+            model_data["sql_table_name"] = model_data["alias"]
+        else:
+            model_data["sql_table_name"] = model_data.get("name")  # TODO: Needs to be fully qualified name]
+
+        # Process model-level meta fields
+        if "meta" in model_data:
+            for meta_key, meta_value in model_data["meta"].items():
+                if meta_key[:7] == "looker_" or meta_key[:7] == "lookml_":
+                    model_data[meta_key[7:]] = model_data["meta"][meta_key]
+
+        invalid_properties = list()
+        for model_property in model_data.keys():
+            if model_property not in VALID_LOOKML_VIEW_PROPERTIES:
+                invalid_properties.append(model_property)
+        for invalid_property in invalid_properties:
+            logger.debug("Removing property invalid for LookML for view {}: {}".format(
+                model_data.get("name"), invalid_property))
+            del model_data[invalid_property]
+
+    return {"views": lookml_views_dbt_data}
