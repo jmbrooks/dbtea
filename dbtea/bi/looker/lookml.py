@@ -1,5 +1,5 @@
 import os
-from typing import List, Tuple, Union
+from typing import List, Union
 
 import lkml
 
@@ -12,13 +12,6 @@ LOOKML_DIMENSION = "dimension"
 LOOKML_DIMENSION_GROUP = "dimension_group"
 LOOKML_MEASURE = "measure"
 LOOKML_SET = "set"
-
-LOOKML_TYPE_STRING = "string"
-LOOKML_TYPE_NUMBER = "number"
-LOOKML_TYPE_DATE = "date"
-LOOKML_TYPE_TIMESTAMP = "time"
-LOOKML_TYPE_BOOL = "yesno"
-LOOKML_TYPE_ZIP = "zipcode"
 
 LOOKML_DIMENSION_GROUP_TYPES = {"duration", "time"}
 
@@ -37,29 +30,6 @@ VALID_LOOKML_DIMENSION_PROPERTIES = {
     "value_format_name", "alias", "convert_tz", "description", "hidden", "label", "required_access_grants",
     "suggestable", "tags", "type", "suggest_dimension", "suggest_explore", "view_label"
 }
-
-LOOKML_YESNO_DATA_TYPE_MAPPINGS = {"bit", "bool", "boolean"}
-LOOKML_NUMBER_DATA_TYPE_MAPPINGS = {"int", "tinyint", "smallint", "bigint", "integer", "numeric", "number", "decimal",
-                                    "float", "real", "serial", "int64", "double", "double precision"}
-LOOKML_TIME_DATA_TYPE_MAPPINGS = {"timestamp", "timestamp_tz", "timestamp_ltz", "timestamp_ntz", "datetime"}
-LOOKML_DATE_DATA_TYPE_MAPPINGS = {"date"}
-
-
-def convert_to_lookml_data_type(field_name: str, field_type: str, include_postal_code: bool = False) -> Tuple[str, str]:
-    """"""
-    if include_postal_code and field_name in LOOKML_ZIPCODE_FIELD_NAMES:
-        return LOOKML_TYPE_ZIP, LOOKML_DIMENSION
-
-    if field_type in LOOKML_YESNO_DATA_TYPE_MAPPINGS:
-        return LOOKML_TYPE_BOOL, LOOKML_DIMENSION
-    elif field_type in LOOKML_TIME_DATA_TYPE_MAPPINGS:
-        return LOOKML_TYPE_TIMESTAMP, LOOKML_DIMENSION_GROUP
-    elif field_type in LOOKML_DATE_DATA_TYPE_MAPPINGS:
-        return LOOKML_TYPE_DATE, LOOKML_DIMENSION
-    elif field_type in LOOKML_NUMBER_DATA_TYPE_MAPPINGS:
-        return LOOKML_TYPE_NUMBER, LOOKML_DIMENSION
-    else:
-        return LOOKML_TYPE_STRING, LOOKML_DIMENSION
 
 
 def create_lookml_model(
