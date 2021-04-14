@@ -1,0 +1,54 @@
+version: 2
+
+sources:
+  - name: google_ads
+    description: Google Ads accounts data, including spend and engagement, account and campaign metrics, and counselor storefront data
+    database: "{{ var('source_database', target.database) }}"
+    schema: google_ads
+
+    loader: keboola
+    loaded_at_field: kbc_synced_at
+    freshness:
+      warn_after: { count: 24, period: hour }
+      error_after: { count: 48, period: hour }
+
+    meta:
+      contains_pii: false
+      owner: "@jb"
+      source_maturity: beta
+      timezone: utc
+    tags:
+      - google
+      - spend
+      - marketing
+
+    tables:
+      - name: account_metrics
+        description: ""
+        columns:
+          - name: customer_id
+            tests:
+              - not_null
+          - name: report_date
+            tests:
+              - not_null
+          - name: impressions
+          - name: cost
+          - name: kbc_synced_at
+
+      - name: accounts
+        description: "Table of Google Ads accounts, where each row is uniquely identified by an customer account"
+        columns:
+          - name: id
+            tests:
+              - not_null
+              - unique
+          - name: client_customer
+          - name: descriptive_name
+          - name: currency_code
+          - name: timezone
+          - name: hierarchy_level
+          - name: is_hidden
+          - name: is_manager_account
+          - name: is_test_account
+          - name: kbc_synced_at

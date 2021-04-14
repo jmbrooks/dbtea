@@ -1,0 +1,25 @@
+version: 2
+
+macros:
+  - name: cents_to_dollars
+    description: "Convert a numeric cents column value to dollars and cents, defaults to round to the nearest cent (e.g. 24061 becomes 240.61)"
+    arguments:
+      - name: column_name
+        type: column name or expression
+        description: "The name of a column, or an expression — anything that can be `select`-ed as a column"
+
+      - name: scale
+        type: integer
+        description: "The number of decimal places to round to. Default is 2."
+
+  - name: fetch_payment_method
+    description: "Given a payment method ID, map this identifier to its corresponding payment method (e.g. 1 maps to 'stripe')"
+
+  - name: fetch_source_rank
+    description: "Maps a source group column to a normalized, conformed value which is assigned based on internal source ranking"
+
+  - name: one_hot_encode_flags
+    description: "Given a 'flags' column in a table, read the 'flags' table to determine what flag values mean for that table, and creates a boolean column for each unique type of flag in the table"
+
+  - name: parse_ua
+    description: "Apply this macro to a User Agent (UA) field (e.g. created_ua) along with what you want to pull from the UA (e.g. browser, device, device_type) to return that value. Browser returns the browser (e.g. chrome), granular device the detailed device (e.g. android app) and device_type the type of device used (e.g. desktop, mobile)"

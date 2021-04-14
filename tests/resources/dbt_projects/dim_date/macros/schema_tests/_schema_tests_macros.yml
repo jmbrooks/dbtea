@@ -1,0 +1,5 @@
+version: 2
+
+macros:
+  - name: test_primary_key
+    description: "Schema test macro - a helper test for confirming a column is the primary key. Tests that there are no nulls and uniqueness"

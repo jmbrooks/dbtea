@@ -1,0 +1,11 @@
+version: 2
+
+macros:
+  - name: coalesce_deep_future
+    description: "Given some date or timestamp column, if the date is null, coalesce it to our assigned designation for a time way in the future, representing ongoing or unknown future dates"
+
+  - name: coalesce_na
+    description: "Takes an input column and applies a coalesce to it, where the default NA value (from the default_na) macro is applied if the column value is Null"
+
+  - name: default_na
+    description: "Default not applicable (N/A) value for a date field, to be plugged in to replace nulls when a date field is missing"

@@ -119,7 +119,7 @@ view: dim_date {
   }
 
   dimension: is_workday {
-    description: "True if the date is a working day- a day of the week and not a holiday, otherwise False"
+    description: "True if the date is a working day - a week day and not a holiday, otherwise False"
     type: yesno
     sql: ${TABLE}.is_workday ;;
   }
@@ -338,3 +338,5 @@ view: dim_date {
     ]
   }
 }
+
+view: another_view {}

@@ -1,8 +1,16 @@
 version: 2
 
 models:
+  - name: another_view
+
   - name: dim_date
     description: "{{ doc('dim_date') }}"
+    meta:
+      owner: "@jmbrooks"
+      model_maturity: beta
+      lookml_sql_table_name: dim_date
+      lookml_label: Date Dimension
+
     columns:
       - name: date_key
         description: "Unique integer identifier for a date of the format YYYYMMDD, and primary for the table"
