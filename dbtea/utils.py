@@ -1,7 +1,6 @@
 import json
 import os
 import subprocess
-import sys
 
 import yaml
 
@@ -69,6 +68,11 @@ def flatten_json(json_data: dict, delimiter: str = "_"):
             flattened_output[key] = json_data[key]
 
     return flattened_output
+
+
+def assemble_path(*args):
+    """"""
+    return os.path.join(*args)
 
 
 def parse_yaml_file(yaml_file_path: str) -> dict:
