@@ -144,7 +144,7 @@ def main():
     # sample_path = "/tests/resources/dbt_projects/dim_date"
     # dbt_project_directory = utils.fetch_dbt_project_directory(sample_path)
     # dim_date_yaml = utils.parse_yaml_file(
-    #     os.path.join(dbt_project_directory, "models/marts/_core.yml")
+    #     utils.assemble_path(dbt_project_directory, "models/marts/_core.yml")
     # )
     # print(dim_date_yaml)
 
