@@ -5,6 +5,7 @@ import requests
 
 class DbteaException(Exception):
     """Exception related to dbtea configuration, processing or compatibility."""
+
     exit_code = 100
 
     def __init__(self, name: str, title: str, detail: str):
@@ -21,6 +22,7 @@ class DbteaException(Exception):
 
 class GitException(Exception):
     """Exception related to Git or Git provider configuration or APIs."""
+
     exit_code = 101
 
     def __init__(

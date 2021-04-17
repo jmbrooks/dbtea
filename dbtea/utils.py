@@ -36,7 +36,9 @@ def fetch_dbt_project_directory(custom_project_directory: str = None) -> str:
     root_path = os.path.abspath(os.sep)
 
     if custom_project_directory:
-        custom_directory_project_file = assemble_path(custom_project_directory, DBT_PROJECT_FILE)
+        custom_directory_project_file = assemble_path(
+            custom_project_directory, DBT_PROJECT_FILE
+        )
         if os.path.exists(custom_directory_project_file):
             return custom_project_directory
         else:
@@ -114,7 +116,9 @@ def log_duration(fn: Callable):
             elapsed_formatted = human_readable(elapsed_time)
             message_detail = get_detail(fn.__name__)
 
-            logger.info(f"Completed {message_detail}operation in {elapsed_formatted}.\n")
+            logger.info(
+                f"Completed {message_detail}operation in {elapsed_formatted}.\n"
+            )
         return result
 
     return timed_function
@@ -126,7 +130,9 @@ def parse_yaml_file(yaml_file_path: str) -> dict:
         raise DbteaException(
             name="missing-yaml-file",
             title="YAML file set to parse is missing",
-            detail="Attempted to parse YAML file at path {}, however this path is not a file".format(yaml_file_path)
+            detail="Attempted to parse YAML file at path {}, however this path is not a file".format(
+                yaml_file_path
+            ),
         )
     with open(yaml_file_path, "r") as yaml_stream:
         yaml_data = yaml.safe_load(yaml_stream) or {}
@@ -140,7 +146,9 @@ def parse_json_file(json_file_path: str) -> dict:
         raise DbteaException(
             name="missing-json-file",
             title="JSON file set to parse is missing",
-            detail="Attempted to parse JSON file at path {}, however this path is not a file".format(json_file_path)
+            detail="Attempted to parse JSON file at path {}, however this path is not a file".format(
+                json_file_path
+            ),
         )
     with open(json_file_path, "r") as json_stream:
         json_data = json.load(json_stream)
@@ -148,18 +156,34 @@ def parse_json_file(json_file_path: str) -> dict:
     return json_data
 
 
-def run_cli_command(command: Union[List[str], str], working_directory: str, use_shell: bool = False,
-                    output_as_text: bool = True, capture_output: bool = True, **kwargs):
+def run_cli_command(
+    command: Union[List[str], str],
+    working_directory: str,
+    use_shell: bool = False,
+    output_as_text: bool = True,
+    capture_output: bool = True,
+    **kwargs,
+):
     """Execute command line subprocess"""
-    result = subprocess.run(command, shell=use_shell, cwd=working_directory, text=output_as_text,
-                            capture_output=capture_output, **kwargs)
+    result = subprocess.run(
+        command,
+        shell=use_shell,
+        cwd=working_directory,
+        text=output_as_text,
+        capture_output=capture_output,
+        **kwargs,
+    )
 
     if result.stderr:
-        raise subprocess.CalledProcessError(returncode=result.returncode, cmd=result.args, stderr=result.stderr)
+        raise subprocess.CalledProcessError(
+            returncode=result.returncode, cmd=result.args, stderr=result.stderr
+        )
     if result.stdout:
         if "Encountered an error" in result.stdout:  # Handle for dbt stdout errors
             logger.error("dbt Error: {}".format(result.stdout))
-            raise subprocess.CalledProcessError(returncode=result.returncode, cmd=result.args, stderr=result.stdout)
+            raise subprocess.CalledProcessError(
+                returncode=result.returncode, cmd=result.args, stderr=result.stdout
+            )
 
         logger.debug("Command Result:\n{}".format(result.stdout))
 
