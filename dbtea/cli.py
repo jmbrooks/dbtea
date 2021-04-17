@@ -4,9 +4,8 @@ import os
 import sys
 from typing import Callable
 
-from dbt.config import PROFILES_DIR
-
 import dbtea.utils as utils
+from dbtea.config import DbteaConfig, PROFILES_DIR
 from dbtea.exceptions import DbteaException
 from dbtea.logger import DBTEA_LOGGER as logger
 from dbtea.version import check_installed_python_version
