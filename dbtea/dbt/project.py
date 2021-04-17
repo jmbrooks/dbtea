@@ -2,9 +2,8 @@
 Initialize dbt project data.
 
 """
-import os
-
 import dbt.config.project as dbt_project
+from dbt.config.profile import PROFILES_DIR
 
 import dbtea.utils as utils
 from dbtea.logger import DBTEA_LOGGER as logger
@@ -38,11 +37,15 @@ class DbtProject(dbt_project.PartialProject):
     """"""
     @property
     def log_path(self):
-        return os.path.join(self.project_root, self.project_dict.get("log-path", "logs"))
+        return utils.assemble_path(self.project_root, self.project_dict.get("log-path", "logs"))
+
+    @property
+    def profile_path(self):
+        return PROFILES_DIR
 
     @property
     def target_path(self):
-        return os.path.join(self.project_root, self.project_dict.get("target-path", "target"))
+        return utils.assemble_path(self.project_root, self.project_dict.get("target-path", "target"))
 
     @property
     def catalog_artifact_data(self):
@@ -80,10 +83,10 @@ class DbtProject(dbt_project.PartialProject):
 
     def run_dbt_deps(self, require_codegen: bool = False, *args, **kwargs) -> None:
         """Run `dbt deps` command to install dbt project dependencies; the `codegen` package must be included."""
-        project_packages_file = os.path.join(self.project_root, 'packages.yml')
+        project_packages_file = utils.assemble_path(self.project_root, 'packages.yml')
 
         if require_codegen:
-            if not os.path.isfile(project_packages_file):
+            if not utils.file_exists(project_packages_file):
                 raise FileExistsError("You must have a packages.yml file specified in your project")
 
             package_data = utils.parse_yaml_file(project_packages_file)
@@ -197,8 +200,8 @@ class DbtProject(dbt_project.PartialProject):
         """"""
         if artifact_file not in ARTIFACT_DATA_FILES.values():
             logger.warning("You have specified an artifact file which is not in the list of known dbt artifacts")
-        artifact_path = os.path.join(self.project_root, self.target_path, artifact_file)
-        if not os.path.isfile(artifact_path):
+        artifact_path = utils.assemble_path(self.project_root, self.target_path, artifact_file)
+        if not utils.file_exists(artifact_path):
             raise DbteaException(
                 name="artifact-file-missing",
                 title="Artifact file {} is missing".format(artifact_file),
