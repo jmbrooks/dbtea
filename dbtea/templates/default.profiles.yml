@@ -1,0 +1,4 @@
+config:
+  partial_parse: true
+  send_anonymous_usage_stats: false
+  use_colors: true

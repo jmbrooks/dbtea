@@ -1,0 +1,15 @@
+# Specify default config options for all dbt projects
+logging_level: INFO
+log_file_location: local
+log_file_name: dbtea.log
+
+# Include details for each dbt project
+dbt_project_name:  # Change to your dbt project name, must match project `name` parameter in dbt_project.yml
+  looker_project_name: looker_project_name  # Change to the Looker project name you want to pass metadata to
+  lookml_metadata_structure: immutable
+  looker_sdk_base_url: https://my.looker.com:19999  # Replace with your Looker URL
+  looker_sdk_api_version: 3.1
+  looker_sdk_client_id: _your_api_client_id_
+  looker_sdk_client_secret: _your_api_client_secret_
+  looker_sdk_verify_ssl: true
+  looker_sdk_timeout: 60  # Timeout for Looker API requests, in seconds
