@@ -1,7 +1,9 @@
-import os
-from typing import List, Union
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Optional
 
 import lkml
+import looker_sdk
 
 import dbtea.utils as utils
 from dbtea.exceptions import DbteaException
@@ -33,15 +35,32 @@ VALID_LOOKML_DIMENSION_PROPERTIES = {
 }
 
 
-class LookmlFile(object):
+class LookmlProject:
     """"""
+    def __init__(self, config_file_path: Optional[str] = "looker.ini"):
+        self.client = looker_sdk.init31(config_file=config_file_path)
+        self.client.project()
 
-    def __init__(self, name: str, lookml_type: str, directory_path: str = "./", lookml_data: dict = None):
+
+@dataclass
+class LookmlFile:
+    """"""
+    name: str
+    lookml_type: str
+    directory_path: str
+    lookml_data: Optional[dict] = None
+    lookml_objects: Optional[dict] = None
+
+    @classmethod
+    def from_local_file(cls, looker_project_root: str, file_relative_path: str):
         """"""
-        self.name = name
-        self.lookml_type = lookml_type
-        self.directory_path = directory_path
-        self.lookml_data = lookml_data
+        full_project_path = utils.assemble_path(looker_project_root, file_relative_path)
+        path_suffixes = Path(full_project_path).suffixes
+        lookml_file_type = path_suffixes[0] if len(path_suffixes) > 1 else "generic"
+        directory, file_name = Path(full_project_path).parent, Path(full_project_path).stem
+
+        with open(full_project_path, "r") as local_file_stream:
+            return cls(file_name, lookml_file_type, directory_path=directory, lookml_data=lkml.load(local_file_stream))
 
     @classmethod
     def from_lookml_string(cls, name: str, lookml_type: str, directory_path: str = "./", lookml_string: str = None):
@@ -70,7 +89,21 @@ class LookmlFile(object):
         """"""
         self.lookml_data = lookml_data
 
-    def write_to_local_file(self, local_lookml_project_path: str):
+    def add_lookml_object(self, lookml_object: str, object_type: str):
+        """"""
+        if not self.lookml_objects.get(object_type):
+            self.lookml_objects[object_type] = [lookml_object]
+        else:
+            self.lookml_objects[object_type].append(lookml_object)
+        return self.lookml_objects
+
+    def read_data_from_file(self, local_lookml_project_path: str) -> dict:
+        """Parse a LookML file into a dictionary with keys for each of its primary properties and a list of values."""
+        logger.info("Parsing data from local LookML file {}".format(self.lookml_file_name_and_path))
+        with open(utils.assemble_path(local_lookml_project_path, self.lookml_file_name_and_path), "r") as lookml_file:
+            return lkml.load(lookml_file)
+
+    def write_data_to_file(self, local_lookml_project_path: str) -> None:
         """"""
         with open(utils.assemble_path(local_lookml_project_path, self.lookml_file_name_and_path)) as lookml_file:
             lookml_file.write(self.lookml_string)
@@ -78,7 +111,6 @@ class LookmlFile(object):
 
 class LookmlModel(LookmlFile):
     """"""
-
     def __init__(self, name: str, directory_path: str = None, model_data: dict = None):
         """"""
         super().__init__(name, "model", directory_path=directory_path, lookml_data=model_data)
@@ -127,6 +159,81 @@ class LookmlModel(LookmlFile):
 
         return super().__init__(model_name, "model", directory_path=directory_path, lookml_data=assembled_model_dict)
 
+    @property
+    def explores(self) -> Optional[List[dict]]:
+        return self.lookml_data.get("explores")
+
+
+class LookmlView(LookmlFile):
+    """"""
+    def __init__(self, name: str, directory_path: str = None, view_data: dict = None):
+        """"""
+        super().__init__(name, "view", directory_path=directory_path, lookml_data=view_data)
+
+    @classmethod
+    def assemble_view(cls, view_name: str, sql_table_name: str = None, derived_table: str = None,
+                      dimensions: List[dict] = None, dimension_groups: List[dict] = None, measures: List[dict] = None,
+                      sets: List[dict] = None, parameters: List[dict] = None, label: str = None,
+                      required_access_grants: list = None, extends: str = None, extension_is_required: bool = False,
+                      include_suggestions: bool = True):
+        assembled_view_dict = {"view": {"name": view_name}}
+        logger.info("Creating LookML View: {}".format(view_name))
+
+        # Validate inputs
+        if not sql_table_name and not derived_table and not extends:
+            raise DbteaException(
+                name="missing-lookml-view-properties",
+                title="Missing Necessary LookML View Properties",
+                detail="Created LookML Views must specify either a `sql_table_name`, `derived_table` or `extends` in order "
+                       "to properly specify the view source",
+            )
+
+        # Add optional view options as needed
+        if label:
+            assembled_view_dict["view"]["label"] = label
+        if extends:
+            assembled_view_dict["view"]["extends"] = extends
+        if extension_is_required:
+            assembled_view_dict["view"]["extension"] = "required"
+        if sql_table_name:
+            assembled_view_dict["view"]["sql_table_name"] = sql_table_name
+        if derived_table:
+            assembled_view_dict["view"]["derived_table"] = derived_table
+        if required_access_grants:
+            assembled_view_dict["view"]["required_access_grants"] = required_access_grants
+        if not include_suggestions:
+            assembled_view_dict["view"]["suggestions"] = "no"
+
+        # Add body of View
+        if parameters:
+            assembled_view_dict["view"]["parameters"] = parameters
+        if dimensions:
+            assembled_view_dict["view"]["dimensions"] = dimensions
+        if dimension_groups:
+            assembled_view_dict["view"]["dimension_groups"] = dimension_groups
+        if measures:
+            assembled_view_dict["view"]["measures"] = measures
+        if sets:
+            assembled_view_dict["view"]["sets"] = sets
+
+        return lkml.dump(assembled_view_dict)
+
+    @property
+    def dimensions(self) -> Optional[List[dict]]:
+        return self.lookml_data.get("dimensions")
+
+    @property
+    def dimension_groups(self) -> Optional[List[dict]]:
+        return self.lookml_data.get("dimension_groups")
+
+    @property
+    def measures(self) -> Optional[List[dict]]:
+        return self.lookml_data.get("measures")
+
+    @property
+    def sets(self) -> Optional[List[dict]]:
+        return self.lookml_data.get("sets")
+
 
 def create_lookml_model(
         model_name: str,
@@ -146,7 +253,7 @@ def create_lookml_model(
         week_start_day: str = None,
         case_sensitive: bool = True,
         output_directory: str = None,
-) -> Union[None, str]:
+) -> Optional[str]:
     """"""
     assembled_model_dict = dict()
     logger.info("Creating LookML Model: {}".format(model_name))
@@ -202,7 +309,7 @@ def create_lookml_model(
     if output_to == "stdout":
         return lkml.dump(assembled_model_dict)
     else:
-        model_file_name = os.path.join(output_directory, model_name + ".model.lkml")
+        model_file_name = utils.assemble_path(output_directory, model_name + ".model.lkml")
         with open(model_file_name, "w") as output_stream:
             output_stream.write(lkml.dump(assembled_model_dict))
 
@@ -276,13 +383,13 @@ def parse_lookml_file(lookml_file_name: str) -> dict:
 
 
 def to_lookml(data: dict, output_to: str = "stdout", output_file: str = None,
-              lookml_file_type: str = None, output_directory: str = None) -> Union[None, str]:
+              lookml_file_type: str = None, output_directory: str = None) -> Optional[str]:
     """"""
     if output_to == "stdout":
         return lkml.dump(data)
     else:
-        output_file = os.path.join(output_directory, output_file + "." + lookml_file_type + ".lkml") \
-            if lookml_file_type else os.path.join(output_directory, output_file + ".lkml")
+        output_file = utils.assemble_path(output_directory, output_file + "." + lookml_file_type + ".lkml") \
+            if lookml_file_type else utils.assemble_path(output_directory, output_file + ".lkml")
         with open(output_file, "w") as output_stream:
             output_stream.write(lkml.dump(data))
 
