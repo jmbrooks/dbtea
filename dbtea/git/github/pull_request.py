@@ -3,7 +3,6 @@ import json
 import requests
 
 import dbtea.utils as utils
-
 from dbtea.exceptions import GitException
 from dbtea.logger import DBTEA_LOGGER as logger
 

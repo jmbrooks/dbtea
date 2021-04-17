@@ -5,12 +5,11 @@ import sys
 from typing import Callable
 
 import dbtea.utils as utils
-from dbtea.config import DbteaConfig, PROFILES_DIR
+from dbtea import __version__
+from dbtea.config import PROFILES_DIR, DbteaConfig
 from dbtea.exceptions import DbteaException
 from dbtea.logger import DBTEA_LOGGER as logger
 from dbtea.version import check_installed_python_version
-
-# from dbtea import __version__
 
 
 class EnvVarAction(argparse.Action):
@@ -134,6 +133,7 @@ def create_parser() -> argparse.ArgumentParser:
 
 def main():
     """Execute dbtea, the primary entrypoint."""
+    logger.info("Running dbtea version: {}".format(__version__))
     check_installed_python_version()
 
     parser = create_parser()

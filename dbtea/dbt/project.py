@@ -6,8 +6,8 @@ import dbt.config.project as dbt_project
 from dbt.config.profile import PROFILES_DIR
 
 import dbtea.utils as utils
-from dbtea.logger import DBTEA_LOGGER as logger
 from dbtea.exceptions import DbteaException
+from dbtea.logger import DBTEA_LOGGER as logger
 
 ARTIFACT_DATA_FILES = {
     "catalog": "catalog.json",

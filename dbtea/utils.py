@@ -3,11 +3,10 @@ import json
 import os
 import subprocess
 import timeit
-
-import yaml
-
 from pathlib import Path
 from typing import Callable, List, Union
+
+import yaml
 
 from dbtea.exceptions import DbteaException
 from dbtea.logger import DBTEA_LOGGER as logger
