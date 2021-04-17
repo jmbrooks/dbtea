@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import dbtea.utils as utils
-from dbtea.dbt.project import PROFILES_DIR
+from dbtea.dbt_client.project import PROFILES_DIR
 from dbtea.exceptions import DbteaException
 from dbtea.logger import DBTEA_LOGGER as logger
 
