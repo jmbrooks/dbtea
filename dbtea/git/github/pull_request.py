@@ -1,7 +1,8 @@
 import json
-import os
 
 import requests
+
+import dbtea.utils as utils
 
 from dbtea.exceptions import GitException
 from dbtea.logger import DBTEA_LOGGER as logger
@@ -19,7 +20,7 @@ def create_pull_request(
     description: str = "dbtea metadata refresh",
 ):
     """Creates the pull request for the head_branch against the base_branch"""
-    github_pulls_url = os.path.join(
+    github_pulls_url = utils.assemble_path(
         GITHUB_API_URL, "repos", organization_name, repository_name, "pulls"
     )
     headers = {
