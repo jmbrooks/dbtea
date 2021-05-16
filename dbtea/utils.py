@@ -15,12 +15,18 @@ DBT_PROJECT_FILE = "dbt_project.yml"
 
 
 def assemble_path(*args):
-    """"""
-    return os.path.join(*args)
+    """Join together all specified inputs into a directory path."""
+    if not args:
+        raise ValueError("You must specify at each one path parameter to assemble")
+    assembled_path = Path(args[0])
+    for index, path in enumerate(args[1:]):
+        assembled_path /= path
+
+    return assembled_path
 
 
 def file_exists(file_path: str) -> bool:
-    """"""
+    """Return true if the specified local path is a file."""
     return Path(file_path).is_file()
 
 
@@ -90,6 +96,11 @@ def get_detail(fn_name: str):
         "run_content": "content ",
     }
     return detail_map.get(fn_name, "")
+
+
+def get_home_dir() -> str:
+    """"""
+    return str(Path.home())
 
 
 def human_readable(elapsed: float):
