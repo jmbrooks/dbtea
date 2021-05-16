@@ -1,1 +1,1 @@
-from dbtea.dbt_client.project import DbtProject
+from dbtea.clients.dbt import DbtProject

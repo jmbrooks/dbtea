@@ -5,11 +5,11 @@ import sys
 from typing import Callable
 
 import dbtea.utils as utils
-from dbtea import __version__
 from dbtea.config import PROFILES_DIR, DbteaConfig
 from dbtea.exceptions import DbteaException
 from dbtea.logger import DBTEA_LOGGER as logger
-from dbtea.version import check_installed_python_version
+from dbtea.version import check_installed_python_version, check_installed_dbt_version, get_dbtea_version_info
+from dbtea.clients.bi.looker import LookmlProject
 
 
 class EnvVarAction(argparse.Action):
@@ -133,12 +133,28 @@ def create_parser() -> argparse.ArgumentParser:
 
 def main():
     """Execute dbtea, the primary entrypoint."""
-    logger.info("Running dbtea version: {}".format(__version__))
+    get_dbtea_version_info()
     check_installed_python_version()
+    check_installed_dbt_version()
 
     parser = create_parser()
     args = parser.parse_args()
-    print(args)
+    # print(args)
+
+    dbtea_config = DbteaConfig(replace_config_if_exists=False, dbt_project="4_mile_bq_sample",
+                               looker_project="4_mile_analytics", looker_config_path="",
+                               looker_config_section="4_mile_analytics")
+    default_project = dbtea_config.config_data.get("default_project")
+    # print(dbtea_config.config_data)
+    # print(dbtea_config.config_data.get("default_project"))
+
+    if dbtea_config.config_data.get(default_project):
+        project_config_data = dbtea_config.config_data.get(default_project)
+        print(project_config_data)
+        lookml_project_id = project_config_data.get("lookml_project_name")
+        print(lookml_project_id)
+        lookml_project = LookmlProject(lookml_project_id, config_section=lookml_project_id)
+        print(lookml_project.git_username)
 
     # sample_path = "/tests/resources/dbt_projects/dim_date"
     # dbt_project_directory = utils.fetch_dbt_project_directory(sample_path)
