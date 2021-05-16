@@ -5,6 +5,7 @@ log_file_name: dbtea.log
 
 # Include details for each dbt project
 dbt_project_name:  # Change to your dbt project name, must match project `name` parameter in dbt_project.yml
+  deployment: core
   looker_project_name: looker_project_name  # Change to the Looker project name you want to pass metadata to
   lookml_metadata_structure: immutable
   looker_sdk_base_url: https://my.looker.com:19999  # Replace with your Looker URL
