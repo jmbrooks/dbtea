@@ -94,9 +94,16 @@ VALID_LOOKML_DIMENSION_PROPERTIES = {
 class LookmlProject:
     """"""
 
-    def __init__(self, config_file_path: Optional[str] = "looker.ini"):
-        self.client = looker_sdk.init31(config_file=config_file_path)
-        self.client.project()
+    def __init__(self, project_id: str, config_file_path: Optional[str] = None, config_section: str = "looker"):
+        config_path = config_file_path if config_file_path \
+            else utils.assemble_path(utils.get_home_dir(), ".dbt", "looker.ini")
+        super().__init__(id=project_id)
+        self.api_client = looker_sdk.init31(config_file=config_path, section=config_section)
+        self._project = self.api_client.project(project_id)
+
+    @property
+    def name(self):
+        return self._project.name
 
 
 @dataclass
